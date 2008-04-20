@@ -103,8 +103,8 @@ reco::CaloMET CaloSpecificAlgo::addInfo(const CandidateCollection *towers, Commo
     }
   specific.MaxEtInEmTowers         = MaxTowerEm;  
   specific.MaxEtInHadTowers        = MaxTowerHad;         
-  specific.EtFractionHadronic = totalEm  / totalEt; 
-  specific.EtFractionEm       = totalHad / totalEt;       
+  specific.EtFractionHadronic = totalHad / totalEt; 
+  specific.EtFractionEm       = totalEm / totalEt;       
   // Instantiate containers for the MET candidate and initialise them with
   // the MET information in "met" (of type CommonMETData)
   const LorentzVector p4( met.mex, met.mey, 0.0, met.met );

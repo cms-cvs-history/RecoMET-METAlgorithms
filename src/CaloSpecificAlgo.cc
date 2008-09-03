@@ -94,7 +94,7 @@ reco::CaloMET CaloSpecificAlgo::addInfo(edm::Handle<edm::View<Candidate> > tower
 	       if(calotower->et() < globalThreshold) continue;
 	       totalEt  += calotower->et();
 	       totalEm  += calotower->emEt();
-	       totalHad += calotower->hadEt();
+	       totalHad += calotower->hadEt() + calotower->outerEt() ;
 	       
 	       bool hadIsDone = false;
 	       bool emIsDone = false;

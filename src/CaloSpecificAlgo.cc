@@ -94,7 +94,8 @@ reco::CaloMET CaloSpecificAlgo::addInfo(edm::Handle<edm::View<Candidate> > tower
 	       if(calotower->et() < globalThreshold) continue;
 	       totalEt  += calotower->et();
 	       totalEm  += calotower->emEt();
-	       totalHad += calotower->hadEt() + calotower->outerEt() ;
+	       
+	       //totalHad += calotower->hadEt() + calotower->outerEt() ;
 	       
 	       bool hadIsDone = false;
 	       bool emIsDone = false;
@@ -129,7 +130,7 @@ reco::CaloMET CaloSpecificAlgo::addInfo(edm::Handle<edm::View<Candidate> > tower
 			   else
 			     {
 			       //These quantities need to be corrected from above if HF is excluded
-			       totalHad             -= calotower->hadEt();
+			       // totalHad             -= calotower->hadEt();  
 			       totalEm              -= calotower->emEt();
 			       totalEt              -= calotower->et();
 			     }
@@ -168,6 +169,10 @@ reco::CaloMET CaloSpecificAlgo::addInfo(edm::Handle<edm::View<Candidate> > tower
 	     }
 	 }
        }
+  
+  //Following Greg L's suggestion to calculate this quantity outside of the loop and to avoid confusion. 
+  //This should work regardless of HO's inclusion / exclusion .
+  totalHad += (totalEt - totalEm);
   
   if(!noHF)
     { // Form sub-det specific MET-vectors

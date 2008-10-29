@@ -1,3 +1,10 @@
+/*
+class: PFSpecificAlgo.cc
+description:  MET made from Particle Flow candidates
+authors: R. Remington (UF), R. Cavanaugh (UIC/Fermilab)
+date: 10/27/08
+*/
+
 #include "DataFormats/Math/interface/LorentzVector.h"
 #include "RecoMET/METAlgorithms/interface/PFSpecificAlgo.h"
 #include "DataFormats/RecoCandidate/interface/RecoCandidate.h"
@@ -18,6 +25,7 @@ reco::PFMET PFSpecificAlgo::addInfo(edm::Handle<edm::View<Candidate> > PFCandida
   specific.NeutralHadFraction = 0.0;
   specific.ChargedEMFraction = 0.0;
   specific.ChargedHadFraction = 0.0;
+  specific.MuonFraction = 0.0;
 
 
   if(!PFCandidates->size()) // if no Particle Flow candidates in the event

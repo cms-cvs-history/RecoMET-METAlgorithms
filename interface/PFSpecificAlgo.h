@@ -2,7 +2,7 @@
 #define METAlgorithms_PFMETInfo_h
 
 // Adds Particle Flow specific information to MET base class
-// Author: R. Cavanaugh, UIC
+// Author: R. Remington (UF), R. Cavanaugh (UIC/Fermilab)
 // First Implementation: 10/27/08
 
 

@@ -19,7 +19,7 @@
 //
 // Original Author:  Kyle Story, Freya Blekman (Cornell University)
 //         Created:  Fri Apr 18 11:58:33 CEST 2008
-// $Id$
+// $Id: significanceAlgo.cc,v 1.1 2008/04/18 10:12:55 fblekman Exp $
 //
 //
 
@@ -45,8 +45,7 @@ metsig::ASignificance(const std::vector<SigInputObj>& EventVec, double &met_r, d
 {
   
   if(EventVec.size()<1) {
-    std::cerr << "Event Vector is empty!  Return -1:\n";
-    return(-1);
+    return (-1.);
   }
   //=== Analytical Generation of Chisq Contours ===//
   double set_worker = 0;

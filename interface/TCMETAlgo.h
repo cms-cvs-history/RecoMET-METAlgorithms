@@ -38,7 +38,9 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "TH2D.h"
+#include "TMath.h"
 
 class TCMETAlgo 
 {
@@ -58,6 +60,7 @@ class TCMETAlgo
   edm::Handle<reco::PixelMatchGsfElectronCollection> ElectronHandle;
   edm::Handle<reco::CaloMETCollection> metHandle;
   edm::Handle<reco::TrackCollection> TrackHandle;
+  edm::Handle<reco::BeamSpot> BeamSpotHandle;
 
   const class MagneticField* bField;
 
@@ -66,12 +69,9 @@ class TCMETAlgo
   bool isMuon( unsigned int );
   bool isElectron( unsigned int ); 
   bool isGoodTrack( const reco::Track& );
-  void correctMETforMuon( const reco::Track& );
-  void correctSumEtForMuon( const reco::Track& );
   void correctMETforTrack( const reco::Track& );
   void correctSumEtForTrack( const reco::Track&);
   class TVector3 propagateTrack( const reco::Track& );
-
 };
 
 #endif // TCMETAlgo_h

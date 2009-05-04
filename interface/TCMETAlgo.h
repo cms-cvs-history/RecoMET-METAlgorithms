@@ -12,7 +12,7 @@
  *
  * \author    F. Golf
  *
- * \version   1st Version November 12, 2008 
+ * \version   2nd Version March 24, 2009
  ************************************************************/
 
 #include <vector>
@@ -21,6 +21,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "DataFormats/Common/interface/ValueMap.h" 
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
@@ -39,8 +40,8 @@
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/MuonReco/interface/MuonMETCorrectionData.h"
 #include "TH2D.h"
-#include "TMath.h"
 
 class TCMETAlgo 
 {
@@ -57,21 +58,46 @@ class TCMETAlgo
   double sumEt;
 
   edm::Handle<reco::MuonCollection> MuonHandle;
-  edm::Handle<reco::PixelMatchGsfElectronCollection> ElectronHandle;
+  edm::Handle<reco::GsfElectronCollection> ElectronHandle;
   edm::Handle<reco::CaloMETCollection> metHandle;
   edm::Handle<reco::TrackCollection> TrackHandle;
-  edm::Handle<reco::BeamSpot> BeamSpotHandle;
+  edm::Handle<reco::BeamSpot> beamSpotHandle;
+
+  edm::Handle<edm::ValueMap<reco::MuonMETCorrectionData> > muon_data_h;
+  edm::Handle<edm::ValueMap<reco::MuonMETCorrectionData> > tcmet_data_h;
+
+  edm::InputTag muonInputTag_;
+  edm::InputTag electronInputTag_;
+  edm::InputTag metInputTag_;
+  edm::InputTag trackInputTag_;
+  edm::InputTag beamSpotInputTag_;
+
+  edm::InputTag muonDepValueMap_;
+  edm::InputTag tcmetDepValueMap_;
+
+  double  minpt_;
+  double  maxpt_;
+  double  maxeta_;
+  double  maxchi2_;
+  double  minhits_;
+  double  maxd0_;
 
   const class MagneticField* bField;
 
   class TH2D* response_function;
 
+  edm::ValueMap<reco::MuonMETCorrectionData> muon_data;
+  edm::ValueMap<reco::MuonMETCorrectionData> tcmet_data;
+
   bool isMuon( unsigned int );
   bool isElectron( unsigned int ); 
-  bool isGoodTrack( const reco::Track& );
-  void correctMETforTrack( const reco::Track& );
-  void correctSumEtForTrack( const reco::Track&);
-  class TVector3 propagateTrack( const reco::Track& );
+  bool isGoodTrack( const reco::TrackRef );
+  void correctMETforMuon( const reco::TrackRef, const unsigned int );
+  void correctSumEtForMuon( const reco::TrackRef, const unsigned int );
+  void correctMETforTrack( const reco::TrackRef );
+  void correctSumEtForTrack( const reco::TrackRef );
+  class TVector3 propagateTrack( const reco::TrackRef );
+
 };
 
 #endif // TCMETAlgo_h

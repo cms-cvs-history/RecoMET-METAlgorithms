@@ -1,6 +1,7 @@
 <use name=DataFormats/METReco>
 <use name=DataFormats/CaloTowers>
 <use name=DataFormats/Common>
+ <use name=DataFormats/CSCRecHit>
 <use name=FWCore/ParameterSet>
 <use name=rootphysics>
 <use name=MagneticField/Records>
@@ -8,11 +9,14 @@
 <use name=TrackingTools/GeomPropagators>
 <use name=Geometry/CaloTopology>
 <use name=DataFormats/HepMCCandidate>
+<use name=RecoEcal/EgammaCoreTools>
 <export>
  <lib name=RecoMETMETAlgorithms>
  <use name=DataFormats/METReco>
  <use name=DataFormats/CaloTowers>
  <use name=DataFormats/Common>
+ <use name=DataFormats/CSCRecHit>
  <use name=Geometry/CaloTopology>
+<use name=RecoEcal/EgammaCoreTools>
 </export>
 

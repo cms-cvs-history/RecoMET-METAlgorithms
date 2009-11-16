@@ -73,7 +73,7 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 
 	  if( iPhi < 361 )	  // just to be safe
  	    {
-	      iPhi = iPhi/5;   // convert ecal iphi to phiwedge iphi  (e.g. there are 5 crystal per phi wedge, as in calotowers )
+	      iPhi = (iPhi-1)/5 +1;   // convert ecal iphi to phiwedge iphi  (e.g. there are 5 crystal per phi wedge, as in calotowers )
 	      SumE[iPhi] += hit->energy();
 	      NumHits[iPhi] ++;
 
@@ -139,6 +139,7 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
       if( abs(cluster->eta()) <= 1.47 )
 	{ 
 	  vector<float> shapes = EcalClusterTools::ShowerShapes( *cluster, &(*TheEBRecHits.product()) );
+	  //	  vector<float> shapes = EcalClusterTools::showerRoundness( *cluster, &(*TheEBRecHits.product()) );
 	  float roundness = shapes[0];
 	  float angle = shapes[1];
 	  

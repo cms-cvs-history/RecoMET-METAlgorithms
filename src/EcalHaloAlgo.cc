@@ -103,10 +103,9 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 	      DetId id = DetId(hit->id()); 
 	      EBDetId EcalID(id.rawId());
 	      int Hit_iPhi = EcalID.iphi();
-	      Hit_iPhi = Hit_iPhi/5;
+	      Hit_iPhi = (Hit_iPhi-1)/5 + 1; //convert ecal iphi to phiwedge iphi
 	      if( Hit_iPhi != iPhi ) continue;
 	      Hits.push_back( &(*hit) );
-	      
 	    }
 	  std::sort( Hits.begin() , Hits.end(), CompareTime);
 	  float MinusToPlus = 0.;
@@ -160,10 +159,13 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 	}
     }
   
-  edm::ValueMap<float>::Filler TheFiller( TheEcalHaloData.GetShowerShapesRoundness() );
-  TheFiller.insert( TheSuperClusters, vShowerShapes_Roundness.begin(), vShowerShapes_Roundness.end() );
-  TheFiller.fill();  
-
+  edm::ValueMap<float>::Filler TheRoundnessFiller( TheEcalHaloData.GetShowerShapesRoundness() );
+  TheRoundnessFiller.insert( TheSuperClusters, vShowerShapes_Roundness.begin(), vShowerShapes_Roundness.end() );
+  TheRoundnessFiller.fill();  
+  
+  edm::ValueMap<float>::Filler TheAngleFiller( TheEcalHaloData.GetShowerShapesAngle() );
+  TheAngleFiller.insert(TheSuperClusters, vShowerShapes_Angle.begin() , vShowerShapes_Angle.end());
+  TheAngleFiller.fill();
   return TheEcalHaloData;
 }
 

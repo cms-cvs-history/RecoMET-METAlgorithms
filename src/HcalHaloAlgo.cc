@@ -79,7 +79,6 @@ HcalHaloData HcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 	  std::vector<const HBHERecHit*> Hits;
 	  for( HBHERecHitCollection::const_iterator hit = TheHBHERecHits->begin() ; hit != TheHBHERecHits->end() ; hit++ )
 	    {
-
 	      HcalDetId id = HcalDetId(hit->id());                                                                                                    
 	      if( id.iphi() != iPhi ) continue;
 	      if( TMath::Abs(id.ieta() ) > 22 ) continue;  // has to overlap geometrically w/ HB
@@ -106,10 +105,13 @@ HcalHaloData HcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 	      int ieta_i = id_i.ieta();
 	      for( unsigned int j = (i+1) ; j < Hits.size() ; j++ )
 		{
-		  HcalDetId id_j = HcalDetId(Hits[j]->id() );
+		  HcalDetId id_j = HcalDetId(Hits[j]->id());
 		  int ieta_j = id_j.ieta();
-		  if( ieta_i > ieta_j ) PlusToMinus += 1. ;
-		  else MinusToPlus += 1.;
+		  
+		  if( ieta_i > ieta_j ) PlusToMinus += TMath::Abs(ieta_i - ieta_j);
+		  else MinusToPlus += TMath::Abs(ieta_i - ieta_j);
+		  //if( ieta_i > ieta_j ) PlusToMinus += 1. ;
+		  //else MinusToPlus += 1.;
 		}
 	    }
 

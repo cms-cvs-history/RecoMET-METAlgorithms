@@ -120,8 +120,10 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 		  DetId id_j = DetId(Hits[j]->id() );
 		  EBDetId EcalID_j(id_j.rawId());
 		  int ieta_j = EcalID_j.ieta();
-		  if( ieta_i > ieta_j ) PlusToMinus += 1.;
-		  else MinusToPlus += 1.;
+		  if( ieta_i > ieta_j ) PlusToMinus += TMath::Abs(ieta_i - ieta_j );
+		  else MinusToPlus +=  PlusToMinus += TMath::Abs(ieta_i - ieta_j );
+		  //if( ieta_i > ieta_j ) PlusToMinus += 1.;
+		  //else MinusToPlus += 1.;
 		}
 	    }
 	  
@@ -138,7 +140,7 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
       if( abs(cluster->eta()) <= 1.47 )
 	{ 
 	  vector<float> shapes = EcalClusterTools::ShowerShapes( *cluster, &(*TheEBRecHits.product()) );
-	  //	  vector<float> shapes = EcalClusterTools::showerRoundness( *cluster, &(*TheEBRecHits.product()) );
+	  //vector<float> shapes = EcalClusterTools::showerRoundness( *cluster, &(*TheEBRecHits.product()) );
 	  float roundness = shapes[0];
 	  float angle = shapes[1];
 	  
@@ -148,7 +150,6 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 	      edm::Ref<SuperClusterCollection> TheClusterRef( TheSuperClusters, cluster - TheSuperClusters->begin() ) ;
 	      TheEcalHaloData.GetSuperClusters().push_back( TheClusterRef ) ; 
 	    }
-	  
 	  vShowerShapes_Roundness.push_back(shapes[0]);
 	  vShowerShapes_Angle.push_back(shapes[1]);
 	}

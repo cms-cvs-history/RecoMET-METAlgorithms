@@ -121,7 +121,7 @@ EcalHaloData EcalHaloAlgo::Calculate(const CaloGeometry& TheCaloGeometry, edm::H
 		  EBDetId EcalID_j(id_j.rawId());
 		  int ieta_j = EcalID_j.ieta();
 		  if( ieta_i > ieta_j ) PlusToMinus += TMath::Abs(ieta_i - ieta_j );
-		  else MinusToPlus +=  PlusToMinus += TMath::Abs(ieta_i - ieta_j );
+		  else MinusToPlus += TMath::Abs(ieta_i - ieta_j );
 		  //if( ieta_i > ieta_j ) PlusToMinus += 1.;
 		  //else MinusToPlus += 1.;
 		}

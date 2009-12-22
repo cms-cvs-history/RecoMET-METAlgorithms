@@ -10,6 +10,13 @@ using namespace std;
 using namespace edm;
 #include "TMath.h"
 
+
+CSCHaloAlgo::CSCHaloAlgo()
+{
+  deta_threshold = 0.;
+}
+
+
 reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm::Handle<reco::TrackCollection>& TheCSCTracks, edm::Handle<CSCSegmentCollection>& TheCSCSegments, edm::Handle<CSCRecHit2DCollection>& TheCSCRecHits,edm::Handle < L1MuGMTReadoutCollection >& TheL1GMTReadout, edm::Handle<edm::TriggerResults>& TheHLTResults)
 {
   reco::CSCHaloData TheCSCHaloData;
@@ -19,15 +26,26 @@ reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm:
 	{
 	  bool StoreTrack = false;
 	  // Calculate global phi coordinate for central most rechit in the track
-	  float global_phi = 0.;
-	  float global_z = 1200.;
-	  GlobalPoint ClosestGlobalPosition;
+
+	  float innermost_global_z = 1500.;
+	  float outermost_global_z = 0.;
+	  GlobalPoint InnerMostGlobalPosition;  // smallest abs(z)
+	  GlobalPoint OuterMostGlobalPosition;  // largest abs(z)
+	  
 	  for(unsigned int j = 0 ; j < iTrack->extra()->recHits().size(); j++ )
 	    {
 	      edm::Ref<TrackingRecHitCollection> hit( iTrack->extra()->recHits(), j );
 	      DetId TheDetUnitId(hit->geographicalId());
 	      if( TheDetUnitId.det() != DetId::Muon ) continue;
-	      if( TheDetUnitId.subdetId() != MuonSubdetId::CSC ) continue;
+	      if( TheDetUnitId.subdetId() != MuonSubdetId::CSC ) 
+		{
+		  if( TheDetUnitId.subdetId() != MuonSubdetId::DT ) 
+		    {
+		      StoreTrack = false;
+		      break;  // definitely, not halo
+		    }
+		  continue; 
+		}
 
 	      //Its a CSC Track, store it
 	      StoreTrack = true;
@@ -38,18 +56,30 @@ reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm:
 	      const GlobalPoint TheGlobalPosition = TheSurface.toGlobal(TheLocalPosition);
 
 	      float z = TheGlobalPosition.z();
-	      if( TMath::Abs(z) < global_z )
+	      if( TMath::Abs(z) < innermost_global_z )
 		{
-		  global_z = TMath::Abs(z);
-		  ClosestGlobalPosition = GlobalPoint( TheGlobalPosition);
+		  innermost_global_z = TMath::Abs(z);
+		  InnerMostGlobalPosition = GlobalPoint( TheGlobalPosition);
+		}
+	      if( TMath::Abs(z) > outermost_global_z )
+		{
+		  outermost_global_z = TMath::Abs(z);
+		  OuterMostGlobalPosition = GlobalPoint( TheGlobalPosition );
 		}
 	    }
-	  TheCSCHaloData.GetCSCTrackImpactPositions().push_back(ClosestGlobalPosition);
-	  
+
+
+	  float deta = TMath::Abs( OuterMostGlobalPosition.eta() - InnerMostGlobalPosition.eta() );
+
+	  if( deta <= deta_threshold )
+	    StoreTrack = false;
+
 	  if( StoreTrack )
 	    {
 	      edm::Ref<TrackCollection> TheTrackRef( TheCSCTracks, iTrack - TheCSCTracks->begin() ) ;
 	      TheCSCHaloData.GetTracks().push_back( TheTrackRef );
+	      
+	      TheCSCHaloData.GetCSCTrackImpactPositions().push_back(InnerMostGlobalPosition);
 	    }
 	}
     }

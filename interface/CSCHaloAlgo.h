@@ -84,8 +84,18 @@ class CSCHaloAlgo {
   std::vector<edm::InputTag> vIT_HLTBit;
 
   void SetDetaThreshold(float x ){ deta_threshold = x;}
+  void SetMinMaxInnerRadius(float min, float max){ min_inner_radius = min; max_inner_radius = max;}
+  void SetMinMaxOuterRadius(float min, float max) { min_outer_radius = min; max_outer_radius = max;}
+  void SetDphiThreshold(float x) { dphi_threshold = x;}
+  void SetNormChi2Threshold(float x) { norm_chi2_threshold = x;}
  private:
   float deta_threshold;
+  float min_inner_radius;
+  float max_inner_radius;
+  float min_outer_radius;
+  float max_outer_radius;
+  float dphi_threshold;
+  float norm_chi2_threshold;
 };
 
 

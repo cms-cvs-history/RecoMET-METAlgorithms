@@ -14,6 +14,14 @@ using namespace edm;
 CSCHaloAlgo::CSCHaloAlgo()
 {
   deta_threshold = 0.;
+
+  min_inner_radius = 0.;
+  max_inner_radius = 9999.;
+  min_outer_radius = 0.;
+  max_outer_radius = 9999.;
+  dphi_threshold = 999.;
+  norm_chi2_threshold = 999.;
+
 }
 
 
@@ -70,8 +78,28 @@ reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm:
 
 
 	  float deta = TMath::Abs( OuterMostGlobalPosition.eta() - InnerMostGlobalPosition.eta() );
+	  float dphi = TMath::ACos( TMath::Cos( OuterMostGlobalPosition.phi() - InnerMostGlobalPosition.phi() ) ) ;
+	  float innermost_x = InnerMostGlobalPosition.x() ;
+	  float innermost_y = InnerMostGlobalPosition.y();
+	  float outermost_x = OuterMostGlobalPosition.x();
+	  float outermost_y = OuterMostGlobalPosition.y();
+	  float innermost_r = TMath::Sqrt(innermost_x *innermost_x + innermost_y * innermost_y );
+	  float outermost_r = TMath::Sqrt(outermost_x *outermost_x + outermost_y * outermost_y );
+	  
+	  if( deta < deta_threshold )
+	    StoreTrack = false;
+	  if( dphi > dphi_threshold )
+	    StoreTrack = false;
 
-	  if( deta <= deta_threshold )
+	  if( innermost_r < min_inner_radius ) 
+	    StoreTrack = false;
+	  if( innermost_r > max_inner_radius ) 
+	    StoreTrack = false;
+	  if( outermost_r < min_outer_radius )
+	    StoreTrack = false;
+	  if( outermost_r > max_outer_radius ) 
+	    StoreTrack  = false;
+	  if( iTrack->normalizedChi2() > norm_chi2_threshold ) 
 	    StoreTrack = false;
 
 	  if( StoreTrack )

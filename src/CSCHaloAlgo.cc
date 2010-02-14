@@ -50,7 +50,6 @@ reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm:
 		   continue;
 		 }
 
-
 	      //Its a CSC Track, store it
 	      StoreTrack = true;
 
@@ -97,8 +96,12 @@ reco::CSCHaloData CSCHaloAlgo::Calculate(const CSCGeometry& TheCSCGeometry ,edm:
 
 	  if( StoreTrack )
 	    {
+	      //store reference to the track
 	      edm::Ref<TrackCollection> TheTrackRef( TheCSCTracks, iTrack - TheCSCTracks->begin() ) ;
 	      TheCSCHaloData.GetTracks().push_back( TheTrackRef );
+	      
+	      // Store impact point
+	      TheCSCHaloData.GetCSCTrackImpactPositions().push_back( InnerMostGlobalPosition );
 	    }
 	}
     }

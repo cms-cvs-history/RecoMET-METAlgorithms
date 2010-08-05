@@ -38,6 +38,10 @@
 #include "Math/GenVector/VectorUtil.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
+#include "DataFormats/ParticleFlowReco/interface/PFLayer.h"
+#include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
+#include "DataFormats/ParticleFlowReco/interface/PFClusterFwd.h"
+
 #include <cmath>
 #include <iostream>
 #include "TVector3.h"
@@ -46,8 +50,6 @@
 
 typedef math::XYZPoint Point;
 typedef math::XYZTLorentzVector LorentzVector;
-
-
 
 //------------------------------------------------------------------------
 // Default Constructer
@@ -64,6 +66,12 @@ TCMETAlgo::~TCMETAlgo() {}
 reco::MET TCMETAlgo::CalculateTCMET(edm::Event& event, const edm::EventSetup& setup, const edm::ParameterSet& iConfig, TH2D* response_function, TH2D* showerRF)
 { 
      // get configuration parameters
+     usePFClusters_           = iConfig.getParameter<bool>  ("usePFClusters");
+     inputTagPFClustersECAL_  = iConfig.getParameter<edm::InputTag>("PFClustersECAL");
+     inputTagPFClustersHCAL_  = iConfig.getParameter<edm::InputTag>("PFClustersHCAL");
+     inputTagPFClustersHFEM_  = iConfig.getParameter<edm::InputTag>("PFClustersHFEM");
+     inputTagPFClustersHFHAD_ = iConfig.getParameter<edm::InputTag>("PFClustersHFHAD");
+     
      nLayers_                = iConfig.getParameter<int>      ("nLayers");
      nLayersTight_           = iConfig.getParameter<int>      ("nLayersTight");
      vertexNdof_             = iConfig.getParameter<int>      ("vertexNdof");
@@ -151,13 +159,90 @@ reco::MET TCMETAlgo::CalculateTCMET(edm::Event& event, const edm::EventSetup& se
        duplicateTracks_.clear();
        findDuplicateTracks();
      }
+     
+     //get PFCluster collections
+     edm::Handle< reco::PFClusterCollection > clustersECAL;
+     edm::Handle< reco::PFClusterCollection > clustersHCAL;
+     edm::Handle< reco::PFClusterCollection > clustersHFEM;
+     edm::Handle< reco::PFClusterCollection > clustersHFHAD;
+     
+     float pfcmet_x = 0.;
+     float pfcmet_y = 0.;
+     float pfcsumet = 0.;
+
+     if( usePFClusters_ ){
+       bool found = event.getByLabel(inputTagPFClustersECAL_, clustersECAL);      
+       
+       if(!found )
+         edm::LogError("RecoMET")<<" cannot get ECAL clusters: "
+                                         <<inputTagPFClustersECAL_<<std::endl;
+       
+       found = event.getByLabel(inputTagPFClustersHCAL_, clustersHCAL);
+       
+       if(!found )
+         edm::LogError("RecoMET")<<" cannot get HCAL clusters: "
+                                         <<inputTagPFClustersHCAL_<<std::endl;
+       
+       found = event.getByLabel(inputTagPFClustersHFEM_, clustersHFEM);      
+       
+       if(!found )
+         edm::LogError("RecoMET")<<" cannot get HFEM clusters: "
+                                         <<inputTagPFClustersHFEM_<<std::endl;
+       
+       found = event.getByLabel(inputTagPFClustersHFHAD_, clustersHFHAD);      
+       
+       if(!found )
+         edm::LogError("RecoMET")<<" cannot get HFHAD clusters: "
+                                         <<inputTagPFClustersHFHAD_<<std::endl;
+     
+       for (reco::PFClusterCollection::const_iterator it = clustersECAL->begin(); it != clustersECAL->end(); it++){
+         
+         const math::XYZPoint&  cluster_pos = it->position();
+         double et = it->energy() / cosh( cluster_pos.eta() ); 
+         
+         pfcmet_x  -= et * cos(cluster_pos.phi());
+         pfcmet_y  -= et * sin(cluster_pos.phi());
+         pfcsumet  += et;
+       }
+       
+       for (reco::PFClusterCollection::const_iterator it = clustersHCAL->begin(); it != clustersHCAL->end(); it++){
+         if ( it->layer() == PFLayer::HCAL_BARREL2) continue; //skip HO
+
+         const math::XYZPoint&  cluster_pos = it->position();
+         double et = it->energy() / cosh( cluster_pos.eta() ); 
+         
+         pfcmet_x  -= et * cos(cluster_pos.phi());
+         pfcmet_y  -= et * sin(cluster_pos.phi());
+         pfcsumet  += et;
+       }
+
+       for (reco::PFClusterCollection::const_iterator it = clustersHFHAD->begin(); it != clustersHFHAD->end(); it++){
+
+         const math::XYZPoint&  cluster_pos = it->position();
+         double et = it->energy() / cosh( cluster_pos.eta() ); 
+       
+         pfcmet_x  -= et * cos(cluster_pos.phi());
+         pfcmet_y  -= et * sin(cluster_pos.phi());
+         pfcsumet  += et;
+       }
+
+       for (reco::PFClusterCollection::const_iterator it = clustersHFEM->begin(); it != clustersHFEM->end(); it++){
+
+         const math::XYZPoint&  cluster_pos = it->position();
+         double et = it->energy() / cosh( cluster_pos.eta() ); 
+       
+         pfcmet_x  -= et * cos(cluster_pos.phi());
+         pfcmet_y  -= et * sin(cluster_pos.phi());
+         pfcsumet  += et;
+       }
+     }
 
      // get input value maps
      event.getByLabel( muonDepValueMap_ , muon_data_h );
      event.getByLabel( tcmetDepValueMap_, tcmet_data_h );
 
-     const CaloMETCollection *calometcol = metHandle.product();
-     const CaloMET calomet = calometcol->front();
+     const reco::CaloMETCollection *calometcol = metHandle.product();
+     const reco::CaloMET calomet = calometcol->front();
 
      muon_data  = *muon_data_h;
      tcmet_data = *tcmet_data_h;
@@ -171,10 +256,18 @@ reco::MET TCMETAlgo::CalculateTCMET(edm::Event& event, const edm::EventSetup& se
      setup.get<IdealMagneticFieldRecord>().get(theMagField);
      bField = theMagField.product();
 
-     //intialize MET, sumEt to caloMET values
-     met_x = calomet.px();
-     met_y = calomet.py();
-     sumEt = calomet.sumEt();
+    if( usePFClusters_ ){
+       //initialize MET, sumEt to PFCluster values
+       met_x = pfcmet_x;
+       met_y = pfcmet_y;
+       sumEt = pfcsumet;
+     }
+     else{
+       //initialize MET, sumEt to caloMET values
+       met_x = calomet.px();
+       met_y = calomet.py();
+       sumEt = calomet.sumEt();
+     }
 
      //calculate tcMET - correct for muons
      for( unsigned int mu_idx = 0; mu_idx < nMuons; mu_idx++ ) {
@@ -250,7 +343,7 @@ reco::MET TCMETAlgo::CalculateTCMET(edm::Event& event, const edm::EventSetup& se
      }
      
      //find tracks which satisfy track quality cuts and nExpectedOuterHits cut
-     vector<int> goodShowerTracks;
+     std::vector<int> goodShowerTracks;
      if(usedeltaRRejection_){
        findGoodShowerTracks(goodShowerTracks);
      }
@@ -415,7 +508,7 @@ bool TCMETAlgo::closeToElectron( const reco::TrackRef track ){
 
 //--------------------------------------------------------------------
 
-bool TCMETAlgo::nearGoodShowerTrack( const reco::TrackRef track , vector<int> goodShowerTracks ){
+bool TCMETAlgo::nearGoodShowerTrack( const reco::TrackRef track , std::vector<int> goodShowerTracks ){
   
   //checks if 'track' is within dR < deltaRShower_ of any good shower tracks
   float eta1 = track->eta();
@@ -437,7 +530,7 @@ bool TCMETAlgo::nearGoodShowerTrack( const reco::TrackRef track , vector<int> go
 
 //--------------------------------------------------------------------
 
-void TCMETAlgo::findGoodShowerTracks(vector<int>& goodShowerTracks){
+void TCMETAlgo::findGoodShowerTracks(std::vector<int>& goodShowerTracks){
 
   //stores the indices of tracks which pass quality selection and
   //nMinOuterHits cut in goodShowerTracks vector

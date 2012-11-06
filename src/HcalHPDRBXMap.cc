@@ -11,8 +11,7 @@
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 
 // static class member declaration
-// FIXME: Temporary definition of standard topology
-HcalTopology HcalHPDRBXMap::theTopology_(HcalTopologyMode::LHC, 2, 3);
+HcalTopology HcalHPDRBXMap::theTopology_;
 
 
 // empty constructor/destructor

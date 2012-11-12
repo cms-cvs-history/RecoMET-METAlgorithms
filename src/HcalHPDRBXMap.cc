@@ -10,10 +10,6 @@
 #include "FWCore/Utilities/interface/EDMException.h"
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 
-// static class member declaration
-HcalTopology HcalHPDRBXMap::theTopology_;
-
-
 // empty constructor/destructor
 HcalHPDRBXMap::HcalHPDRBXMap() {}
 HcalHPDRBXMap::~HcalHPDRBXMap() {}
@@ -33,8 +29,7 @@ bool HcalHPDRBXMap::isValidRBX(int index)
 bool HcalHPDRBXMap::isValid(const HcalDetId& id)
 {
   if(id.subdet()!=HcalBarrel && id.subdet()!=HcalEndcap) return false;
-  if(theTopology_.valid(id)) return true;
-  else return false;
+  return isValid(id.ieta(),id.iphi());
 }
 
 bool HcalHPDRBXMap::isValid(int ieta, int iphi)
